@@ -1,0 +1,220 @@
+CREATE TABLE IBREW (
+	
+sales_id int, 
+sales_rep VARCHAR(255) NOT NULL, 
+emails VARCHAR(255) NOT NULL, 
+brands VARCHAR(255) NOT NULL, 
+plant_Cost int NOT NULL,
+unit_price int NOT NULL,
+quantity int NOT NULL,
+cost int NOT NULL,
+profit int NOT NULL,
+countries VARCHAR(255) NOT NULL,
+region VARCHAR (255) NOT NULL,
+months VARCHAR (255) NOT NULL,
+years int NOT NULL,
+PRIMARY KEY (sales_id)
+)
+
+SELECT * FROM IBREW
+
+COPY IBREW (sales_id, sales_rep, emails, brands, plant_cost, unit_price, quantity, cost, profit, countries, region, months, years)
+FROM 'C:\Users\solom\OneDrive\Documents\Utiva Class\SQL Assignment\International_Breweries.csv'
+DELIMITER ','
+CSV HEADER;
+
+----------------------------------------------------------------
+-- SECTION A - Profit Analysis
+----------------------------------------------------------------
+
+-- 1. Within the space of the last three years, what was the profit worth of the breweries,
+--    inclusive of the anglophone and the francophone territories?
+
+	
+SELECT SUM (profit) AS "Total Profit from 2017-2019"
+FROM IBREW;
+----------------------------------------------------------------
+
+-- 2. Compare the total profit between these two territories in order for the territory manager,
+--    Mr. Stone to make a strategic decision that will aid profit maximization in 2020.
+
+SELECT CASE
+		WHEN countries IN ('Nigeria', 'Ghana') THEN 'Anglophone'
+			ELSE 'Francophone'
+	   END AS Territory, 
+	SUM (profit) AS Total_Profit
+FROM IBREW
+GROUP BY 1
+ORDER BY 2 DESC
+----------------------------------------------------------------
+-- 3. Country that generated the highest profit in 2019
+
+SELECT countries, SUM (profit) as "Total Profit in 2019"
+FROM IBREW
+WHERE years = 2019
+GROUP BY 1
+ORDER BY 2 DESC
+----------------------------------------------------------------
+-- 4. Year with the highest profit: We see that the year with the most profit is 2017
+
+SELECT years, SUM (profit) as Highest_Profit
+FROM IBREW
+GROUP BY 1
+ORDER BY 2 DESC
+----------------------------------------------------------------
+-- 5. Month with the least Profit generated: December.
+
+SELECT months, years, MIN (profit)
+FROM IBREW
+GROUP BY 1, 2
+ORDER BY 3 
+----------------------------------------------------------------
+-- 6. What was the minimum profit in the month of December 2018?
+
+SELECT MIN (profit)
+FROM IBREW
+WHERE months = 'December' AND years = 2018
+ORDER BY 1
+----------------------------------------------------------------
+-- 7. Compare the profit in percentage for each of the month in 2019
+
+SELECT months, CONCAT(ROUND(SUM(profit)*100/SUM(SUM(profit)) over (), 1), '%') AS "PERCENTAGE PROFIT"
+FROM IBREW
+WHERE years = 2019
+GROUP BY 1
+
+----------------------------------------------------------------
+
+-- 8. Which particular brand generated the highest profit in Senegal?
+
+SELECT brands, SUM (profit) AS "Highest Profit"
+FROM IBREW 
+WHERE countries = 'Senegal'
+GROUP BY 1
+ORDER BY 2 DESC
+limit 1
+
+----------------------------------------------------------------
+-- SECTION B : BRAND ANALYSIS
+----------------------------------------------------------------
+
+-- 1. Within the last two years, the brand manager wants to know the top three brands
+-- consumed in the francophone countries
+
+SELECT brands, SUM (quantity) AS "Rate of Consumption"
+FROM IBREW
+WHERE years IN (2018, 2019) AND countries IN ('Senegal', 'Togo', 'Benin')
+GROUP BY 1
+ORDER BY 2 DESC
+limit 3
+
+----------------------------------------------------------------
+
+-- 2. Find out the top two choice of consumer brands in Ghana
+
+SELECT brands, SUM (quantity) AS "Rate of Consumption"
+FROM IBREW
+WHERE countries = 'Ghana'
+GROUP BY 1
+ORDER BY 2 DESC
+limit 2
+
+----------------------------------------------------------------
+
+-- 3. Find out the details of beers consumed in the past 
+--    three years in the most oil rich country in West Africa.
+
+SELECT brands, SUM (quantity) AS "Rate of Consumption"
+FROM IBREW
+WHERE countries = 'Nigeria' AND brands NOT LIKE ('%malt%')
+GROUP BY 1
+ORDER BY 2 DESC
+
+----------------------------------------------------------------
+-- 4. Favorite malt brand in Anglophone region between 2018 and 2019
+SELECT brands, SUM (quantity) AS "Rate of Consumption"
+FROM IBREW
+WHERE countries IN ('Nigeria', 'Ghana') AND years IN (2018, 2019) AND brands LIKE '%malt%'
+GROUP BY 1
+ORDER BY 2 DESC
+
+----------------------------------------------------------------
+-- 5. Which brands sold the highest in 2019 in Nigeria?
+SELECT brands, SUM (quantity) AS "Rate of Consumption"
+FROM IBREW
+WHERE years = 2019 AND countries = 'Nigeria'
+GROUP BY 1
+ORDER BY 2 DESC
+limit 1
+
+----------------------------------------------------------------
+-- 6. Favorites brand in South_South region in Nigeria
+
+SELECT brands, SUM (quantity) AS "Rate of Consumption"
+FROM IBREW
+WHERE region = 'southsouth' AND countries = 'Nigeria'
+GROUP BY 1
+ORDER BY 2 DESC
+limit 1
+
+----------------------------------------------------------------
+-- 7. Beer consumption in Nigeria
+SELECT brands, SUM (quantity) AS "Rate of Consumption"
+FROM IBREW
+WHERE brands NOT LIKE '%malt%' AND countries = 'Nigeria'
+GROUP BY 1
+ORDER BY 2 DESC
+
+----------------------------------------------------------------
+-- 8. Level of consumption of Budweiser in the regions in Nigeria
+
+SELECT region, SUM (quantity) AS "Rate of Consumption"
+FROM IBREW
+WHERE countries = 'Nigeria' AND brands = 'budweiser'
+GROUP BY 1
+ORDER BY 2 DESC
+
+----------------------------------------------------------------
+-- 9. Level of consumption of Budweiser in the regions 
+--    in Nigeria in 2019 (Decision on Promo)
+
+SELECT region, SUM (quantity) AS "Rate of Consumption"
+FROM IBREW
+WHERE countries = 'Nigeria' AND brands = 'budweiser' AND years = 2019
+GROUP BY 1
+ORDER BY 2 DESC
+
+----------------------------------------------------------------
+-- SECTION C : COUNTRIES ANALYSIS
+----------------------------------------------------------------
+
+-- 1. Country with the highest consumption of beer.
+
+SELECT countries, SUM (quantity) AS "Rate of Consumption"
+FROM IBREW
+WHERE brands NOT LIKE '%malt%'
+GROUP BY 1
+ORDER BY 2 DESC
+
+----------------------------------------------------------------
+
+-- 2. Highest sales personnel of Budweiser in Senegal
+SELECT * from ibrew
+
+SELECT sales_rep, SUM (quantity) AS "Highest Sales"
+FROM IBREW
+WHERE brands = 'budweiser' AND countries = 'Senegal'
+GROUP BY 1
+ORDER BY 2 DESC
+
+----------------------------------------------------------------
+-- 3. Country with the highest profit of the fourth quarter in 2019
+select * from ibrew
+
+SELECT countries, SUM (profit)
+FROM IBREW
+WHERE months IN ('October', 'November', 'December') AND years = 2019
+GROUP BY 1
+ORDER BY 2 DESC
+
+
